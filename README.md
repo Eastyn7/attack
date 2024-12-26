@@ -14,6 +14,332 @@
 pnpm create vue
 ```
 
+## 配置Eslint和Prettier
+
+eslint.config.js文件
+
+~~~js
+import { readFile } from 'node:fs/promises'
+
+import js from '@eslint/js'
+import pluginVue from 'eslint-plugin-vue'
+// import typescriptEslintPlugin from '@typescript-eslint/eslint-plugin'
+import vueTsEslintConfig from '@vue/eslint-config-typescript'
+import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
+import eslintPluginPrettier from 'eslint-plugin-prettier' // 引入 prettier 插件
+import eslintConfigPrettier from 'eslint-config-prettier' // 引入 prettier 配置
+
+const autoImportFile = new URL(
+	'./src/.eslintrc-auto-import.json',
+	import.meta.url,
+)
+const autoImportGlobals = JSON.parse(await readFile(autoImportFile, 'utf8'))
+
+export default [
+	{
+		languageOptions: {
+			globals: {
+				...autoImportGlobals.globals,
+			},
+		},
+	},
+
+	{
+		name: 'app/files-to-lint',
+		files: ['**/*.{ts,mts,tsx,vue}'],
+	},
+
+	{
+		name: 'app/files-to-ignore',
+		ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
+	},
+
+	skipFormatting,
+	js.configs.recommended,
+	...pluginVue.configs['flat/essential'],
+	...vueTsEslintConfig(),
+
+	// 修改 plugins 配置为正确的 flat config 格式
+	{
+		plugins: {
+			vue: pluginVue,
+			// '@typescript-eslint': typescriptEslintPlugin,
+			prettier: eslintPluginPrettier, // 添加 prettier 插件
+		},
+	},
+
+	// 添加规则配置
+	{
+		rules: {
+			'no-console': 'warn',
+			'vue/multi-word-component-names': [
+				'warn',
+				{
+					ignores: ['index'],
+				},
+			],
+			'jsx-quotes': ['error', 'prefer-double'],
+			'@typescript-eslint/explicit-function-return-type': [
+				'warn', // 设置为警告级别，而不是报错
+				{
+					allowExpressions: true, // 允许简单表达式函数不写返回类型，可按需调整
+					allowTypedFunctionExpressions: true, // 允许已类型化的函数表达式不写返回类型等情况，按需调整配置
+				},
+			],
+			'vue/no-setup-props-destructure': ['off'],
+			'no-undef': 'error',
+
+			// 启用 prettier 规则并进行格式化检查
+			'prettier/prettier': [
+				'error',
+				{
+					semi: false,
+					tabWidth: 2,
+					useTabs: true,
+					printWidth: 80,
+					arrowParens: 'always',
+					bracketSpacing: true,
+					endOfLine: 'auto',
+					vueIndentScriptAndStyle: true,
+					singleQuote: true,
+				},
+			],
+		},
+	},
+
+	// 覆盖规则（针对特定文件）
+	{
+		files: ['**/*.ts', '**/*.tsx'],
+		rules: {
+			'@typescript-eslint/explicit-function-return-type': 'error',
+		},
+	},
+
+	// 忽略模式（直接在配置文件中定义）
+	{
+		ignores: ['dist/', 'build/'],
+	},
+
+	// 使用 eslint-config-prettier 禁用所有 Prettier 相关的规则（避免冲突）
+	eslintConfigPrettier,
+]
+~~~
+
+.prettierrc.json文件
+
+~~~js
+
+{
+  "$schema": "https://json.schemastore.org/prettierrc",
+  "semi": false,
+  "tabWidth": 2,
+	"useTabs": true, 
+	"printWidth": 100, 
+	"arrowParens": "always", 
+	"bracketSpacing": true, 
+	"endOfLine": "auto", 
+	"vueIndentScriptAndStyle": true,
+  "singleQuote": true
+}
+
+~~~
+
+## 引入element-ui组件库
+
+安装UI库
+
+```
+pnpm add element-plus
+```
+
+安装图标库
+
+```
+pnpm i @element-plus/icons-vue
+```
+
+自动按需导入
+
+1、安装插件
+
+```
+pnpm add -D unplugin-vue-components unplugin-auto-import
+```
+
+2、配置Vite文件
+
+```js
+import { fileURLToPath, URL } from 'node:url'
+
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+
+// https://vite.dev/config/
+export default defineConfig({
+	plugins: [
+		vue(),
+		AutoImport({
+			include: [
+				/\.[tj]sx?$/, // .ts, .tsx, .js, .jsx
+				/\.vue$/,
+				/\.vue\?vue/, // .vue
+				/\.md$/, // .md
+			],
+			imports: ['vue', 'vue-router', 'pinia'],
+			dts: 'src/auto-import.d.ts',
+			resolvers: [ElementPlusResolver()],
+			// eslint 配置
+			eslintrc: {
+				enabled: true,
+				filepath: 'src/.eslintrc-auto-import.json',
+				globalsPropValue: true,
+			},
+		}),
+		Components({
+			// 搜索子目录
+			deep: true,
+			// 组件有效的扩展名
+			extensions: ['vue', 'js', 'jsx', 'ts', 'tsx', '.mjs'],
+			include: [/\.vue$/, /\.vue\?vue/, /\.js$/, /\.jsx$/, /\.ts$/, /\.tsx$/],
+			resolvers: [ElementPlusResolver()],
+			dirs: ['src/components'],
+			dts: 'src/components.d.ts',
+			directives: true,
+		}),
+	],
+	base: '/',
+	resolve: {
+		alias: {
+			'@': fileURLToPath(new URL('./src', import.meta.url)),
+		},
+	},
+	server: {
+		port: 8080,
+	},
+})
+```
+
+## 配置Axios
+
+安装Axios
+
+~~~
+pnpm add axios
+~~~
+
+配置Request文件
+
+~~~tsx
+import axios from 'axios'
+import type { InternalAxiosRequestConfig } from 'axios'
+import { getLocalData, removeLocalData, isLogin } from '@/utils/util'
+import router from '@/router'
+
+// 自定义请求配置接口，扩展了 Axios 的配置选项
+export interface CustomRequestConfig extends InternalAxiosRequestConfig {
+  needToken?: boolean // 标识请求是否需要携带Token
+}
+
+// 创建axios实例，并设置基础配置
+const http = axios.create({
+  // baseURL: 'http://', // API远程地址
+  // baseURL: 'http://127.0.0.1:3007/api', // 本地API的基础URL
+  timeout: 10000 // 请求超时时间为10秒
+})
+
+// 请求拦截器
+http.interceptors.request.use(
+  (config: CustomRequestConfig) => {
+    if (config.needToken) {
+      const user = getLocalData('cqt-user')
+
+      // 检查用户登录状态是否有效
+      if (isLogin()) {
+        // 如果登录状态有效，将 token 添加到请求头
+        config.headers['Authorization'] = `${user.token}`
+      } else {
+        // 如果 token 已过期，清除用户数据并重定向到登录页
+        removeLocalData('cqt-user')
+        console.warn('登录已过期，请重新登录')
+
+        // 重定向到登录页面
+        router.replace('/login')
+
+        // 拒绝请求，以阻止进一步的网络请求
+        return Promise.reject('登录已过期，请重新登录')
+      }
+    }
+
+    // 设置默认的 Content-Type
+    config.headers['Content-Type'] = 'application/json'
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+// 响应拦截器
+http.interceptors.response.use(
+  (response) => {
+    return response.data // 返回响应的 data 部分
+  },
+  (error) => {
+    // 如果响应状态码为 401，说明 token 无效或已过期
+    if (error.response && error.response.status === 401) {
+      console.warn('登录已过期，请重新登录')
+
+      // 清除本地用户信息并重定向到登录页
+      removeLocalData('cqt-user')
+      router.replace('/login')
+    }
+
+    return Promise.reject(error)
+  }
+)
+
+// 导出处理好的 http 实例
+export default http
+~~~
+
+## 配置Pinia
+
+安装插件
+
+~~~
+pnpm add pinia-plugin-persistedstate -D
+~~~
+
+在仓库中导入
+
+~~~tsx
+import { createPinia } from 'pinia'
+import persist from 'pinia-plugin-persistedstate'
+
+const pinia = createPinia()
+pinia.use(persist)
+
+export default pinia
+
+export * from './modules/auth'
+~~~
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # 后端开发

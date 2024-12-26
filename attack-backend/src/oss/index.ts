@@ -3,8 +3,8 @@ import OSS from 'ali-oss';
 // 初始化 OSS 客户端
 const client = new OSS({
   region: 'oss-cn-chengdu', // 区域，例如 'oss-cn-hangzhou'
-  accessKeyId: 'LTAI5tPMxqNbJ91VyJqcgGoV', // AccessKeyId
-  accessKeySecret: 'IeGTiMcbZYK2WtSfj05uR2bUucUqVX', // AccessKeySecret
+  accessKeyId: '', // AccessKeyId
+  accessKeySecret: '', // AccessKeySecret
   bucket: 'attack_project', // 存储空间名称
 });
 
