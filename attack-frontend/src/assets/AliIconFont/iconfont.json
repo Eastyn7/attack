@@ -1,0 +1,72 @@
+{
+  "id": "4796785",
+  "name": "ATTACK",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "40150436",
+      "name": "分析配置",
+      "font_class": "fenxipeizhi",
+      "unicode": "e6d0",
+      "unicode_decimal": 59088
+    },
+    {
+      "icon_id": "40803127",
+      "name": "数据模型",
+      "font_class": "shujumoxing",
+      "unicode": "e602",
+      "unicode_decimal": 58882
+    },
+    {
+      "icon_id": "586827",
+      "name": "数据集",
+      "font_class": "shujuji",
+      "unicode": "e6ed",
+      "unicode_decimal": 59117
+    },
+    {
+      "icon_id": "22474656",
+      "name": "分析结果",
+      "font_class": "fenxijieguo",
+      "unicode": "e604",
+      "unicode_decimal": 58884
+    },
+    {
+      "icon_id": "37784929",
+      "name": "数据分析",
+      "font_class": "shujufenxi",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    },
+    {
+      "icon_id": "4294083",
+      "name": "标签",
+      "font_class": "biaoqian",
+      "unicode": "e78b",
+      "unicode_decimal": 59275
+    },
+    {
+      "icon_id": "8666833",
+      "name": "文件夹",
+      "font_class": "wenjianjia",
+      "unicode": "e673",
+      "unicode_decimal": 58995
+    },
+    {
+      "icon_id": "8765123",
+      "name": "我的数据",
+      "font_class": "wodeshuju",
+      "unicode": "e625",
+      "unicode_decimal": 58917
+    },
+    {
+      "icon_id": "9332338",
+      "name": "数据处理",
+      "font_class": "shujuchuli",
+      "unicode": "e74c",
+      "unicode_decimal": 59212
+    }
+  ]
+}

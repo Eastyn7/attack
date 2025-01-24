@@ -68,24 +68,24 @@ export const loginUser = async (loginInput: string, password: string): Promise<{
 
 
 
-// // 获取用户的信息
-// export const getUserInfo = async (user_id: number): Promise<UserInfo> => {
-//   // 查询用户详细信息
-//   const userInfo = await query<UserInfo[]>(
-//     `SELECT 
-//       role, nickname, username, gender, avatar, phone, bio
-//      FROM User_info 
-//      WHERE user_id = ?`,
-//     [user_id]
-//   );
+// 获取用户的信息
+export const getUserInfo = async (user_id: number): Promise<UserInfo> => {
+  // 查询用户详细信息
+  const userInfo = await query<UserInfo[]>(
+    `SELECT 
+      gender, avatar, phone, email
+     FROM User_info 
+     WHERE user_id = ?`,
+    [user_id]
+  );
 
-//   if (userInfo.length === 0) {
-//     throw new Error('用户信息不存在');
-//   }
+  if (userInfo.length === 0) {
+    throw new Error('用户信息不存在');
+  }
 
-//   // 返回用户的详细信息
-//   return userInfo[0]; // 假设只会有一个匹配的用户
-// };
+  // 返回用户的详细信息
+  return userInfo[0]; // 假设只会有一个匹配的用户
+};
 
 
 // // 更新用户信息
