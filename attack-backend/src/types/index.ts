@@ -1,6 +1,5 @@
 type Gender = 0 | 1 | 2 // 0: 保密, 1: 男, 2: 女
 
-// 定义数据传输对象类型
 export interface User {
   user_id: number;                // 用户账户唯一自增id
   username: string;               // 用户名
@@ -24,4 +23,11 @@ export interface UpdateUserInfo {
   phone?: string;
   gender?: Gender;
   avatar?: string;
+}
+
+export interface DataList {
+  data_id: number;
+  user_id: number;
+  data_name: string;
+  file_path: string;
 }

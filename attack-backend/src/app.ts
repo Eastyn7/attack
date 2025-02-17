@@ -9,7 +9,7 @@ const app = express();
 // 中间件
 app.use(cors());
 app.use(express.json());
-// app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false }));
 
 // 全局使用 tokenMiddleware，它会自动跳过不需要验证的路由
 app.use(authenticateToken);

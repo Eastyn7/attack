@@ -31,9 +31,9 @@
 
 			// 提示用户
 			ElMessage.success('头像更新成功')
-		} catch (error) {
+		} catch (error: any) {
 			// 处理请求失败的情况
-			ElMessage.error(error || '头像更新失败')
+			ElMessage.error(error.response.data.message || '头像更新失败')
 		}
 	}
 </script>

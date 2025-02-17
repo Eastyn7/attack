@@ -1,9 +1,14 @@
+<script setup lang="ts"></script>
+
 <template>
-	<div>
-		<el-empty description="我的数据界面" />
+	<div class="MDP-layout">
+		<router-view></router-view>
 	</div>
 </template>
 
-<script setup lang="ts"></script>
-
-<style scoped></style>
+<style scoped>
+	.MDP-layout {
+		width: 100%;
+		height: 100%;
+	}
+</style>

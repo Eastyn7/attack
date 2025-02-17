@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { StoreNames } from './store_names'
 import api from '@/api/index'
 import { formToJson } from '@/utils/formToJson'
+import type { UploadRawFile } from 'element-plus'
 
 type Gender = 0 | 1 | 2 // 0: 保密, 1: 男, 2: 女
 
@@ -43,7 +44,6 @@ export const useUserStore = defineStore(StoreNames.USER, {
 				throw error
 			}
 		},
-
 		// 登录
 		async login(data: string) {
 			try {
@@ -110,7 +110,6 @@ export const useUserStore = defineStore(StoreNames.USER, {
 			// 强制刷新页面，确保状态更新
 			location.reload()
 		},
-
 		// 清除UserInfo
 		clearUserInfo() {
 			this.userInfo = {
@@ -120,6 +119,56 @@ export const useUserStore = defineStore(StoreNames.USER, {
 				gender: 0,
 				avatar: '',
 				phone: '',
+			}
+		},
+
+		// 添加文件列表
+		async createDataList(data_name: string, data_file: UploadRawFile) {
+			try {
+				// 创建 FormData 对象
+				const formData = new FormData()
+				formData.append('user_id', String(this.userInfo.user_id))
+				formData.append('data_name', data_name)
+				formData.append('data_file', data_file)
+
+				const result = await api.auth.createDataList(formData)
+
+				if (result.status) {
+					return result.data.dataList
+				}
+			} catch (error) {
+				console.error('添加文件失败', error)
+				throw error
+			}
+		},
+		// 获取用户数据文件列表
+		async getDataList() {
+			try {
+				const jsonData = formToJson({ user_id: this.userInfo.user_id })
+				const result = await api.auth.getDataList(jsonData)
+
+				if (result.status) {
+					return result.data.dataList
+				}
+			} catch (error) {
+				console.error('获取用户数据文件列表失败', error)
+				throw error
+			}
+		},
+		// 获取数据文件地址
+		async getFilePath(data_name: string) {
+			try {
+				const jsonData = formToJson({
+					user_id: this.userInfo.user_id,
+					data_name,
+				})
+				const result = await api.auth.getFilePath(jsonData)
+				if (result.status) {
+					return result.data.filePath
+				}
+			} catch (error) {
+				console.error('获取用户数据文件列表失败', error)
+				throw error
 			}
 		},
 

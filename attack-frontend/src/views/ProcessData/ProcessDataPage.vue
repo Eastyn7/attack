@@ -1,9 +1,14 @@
+<script setup lang="ts"></script>
+
 <template>
-	<div>
-		<el-empty description="数据处理界面" />
+	<div class="PDP-layout">
+		<router-view></router-view>
 	</div>
 </template>
 
-<script setup lang="ts"></script>
-
-<style scoped></style>
+<style scoped>
+	.PDP-layout {
+		width: 100%;
+		height: 100%;
+	}
+</style>

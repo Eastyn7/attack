@@ -18,11 +18,39 @@ const router = createRouter({
 					path: '/mydata',
 					name: 'MyData',
 					component: () => import('@/views/MyData/MyDataPage.vue'),
+					redirect: '/mydata/project',
+					children: [
+						{
+							path: '/mydata/project',
+							name: 'MyDataProject',
+							component: () => import('@/views/MyData/MyDataProjectPage.vue'),
+						},
+						{
+							path: '/mydata/details',
+							name: 'MyDataDetails',
+							component: () => import('@/views/MyData/MyDataDetailsPage.vue'),
+						},
+					],
 				},
 				{
 					path: '/processdata',
 					name: 'ProcessData',
 					component: () => import('@/views/ProcessData/ProcessDataPage.vue'),
+					redirect: '/processdata/project',
+					children: [
+						{
+							path: '/processdata/project',
+							name: 'ProcessDataProject',
+							component: () =>
+								import('@/views/ProcessData/ProcessDataProjectPage.vue'),
+						},
+						{
+							path: '/processdata/details',
+							name: 'ProcessDataDetails',
+							component: () =>
+								import('@/views/ProcessData/ProcessDataDetailsPage.vue'),
+						},
+					],
 				},
 				{
 					path: '/analyse',

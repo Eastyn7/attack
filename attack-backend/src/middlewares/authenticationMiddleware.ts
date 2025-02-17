@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 
-const UNPROTECTED_PATH_REGEX = /^\/api\/public/; // 匹配所有以 /api/public 开头的路径
+const UNPROTECTED_PATH_REGEX = /^\/api\/public|^\/api\/datalist\/createdatalist/; // 匹配所有以 /api/public 开头的路径
 
 // 中间件：验证 JWT token
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): any => {
@@ -36,5 +36,29 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     }
 
     next(); // 如果验证通过，继续执行下一个中间件或路由处理
+  });
+};
+
+export const authenticateUser = (user_id: number, token: string): any => {
+  // 验证 token 并解析
+  jwt.verify(token, 'ATTACK', (err, user) => {
+    if (err) {
+      throw new Error('token 无效');
+    }
+
+    const requestAuthId = user_id;
+    let analysisId: number;
+
+    if (user && typeof user === 'object' && 'user_id' in user) {
+      analysisId = user.user_id;
+    } else {
+      throw new Error('token 中不包含有效的 user_id');
+    }
+
+    if (analysisId !== requestAuthId) {
+      throw new Error('user_id 与 token 不匹配');
+    }
+
+    return true; // 如果验证通过，返回 true
   });
 };

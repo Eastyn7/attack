@@ -185,8 +185,8 @@
 				ElMessage.success('数据集上传成功')
 			}
 			reader.readAsArrayBuffer(file)
-		} catch (error) {
-			ElMessage.error(error || '上传失败，请重试')
+		} catch (error: any) {
+			ElMessage.error(error.response.data.message || '上传失败，请重试')
 		}
 	}
 
@@ -206,8 +206,8 @@
 			// 这里是数据处理的过程
 
 			ElMessage.success('训练模型上传成功')
-		} catch (error) {
-			ElMessage.error(error || '上传失败，请重试')
+		} catch (error: any) {
+			ElMessage.error(error.response.data.message || '上传失败，请重试')
 		}
 	}
 

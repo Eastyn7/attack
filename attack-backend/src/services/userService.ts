@@ -8,7 +8,7 @@ import { uploadImageToOSS } from '../oss'
 // 注册用户
 export const registerUser = async (username: string, password: string): Promise<UserRegister> => {
   // 查询用户名是否已存在
-  const existingUser = await query<User[]>('SELECT * FROM User_login WHERE username = ?', [username]);
+  const existingUser = await query<User[]>('SELECT * FROM user_login WHERE username = ?', [username]);
   if (existingUser.length > 0) {
     throw new Error('用户名已存在');
   }
@@ -37,7 +37,7 @@ export const registerUser = async (username: string, password: string): Promise<
 
 // 登录用户
 export const loginUser = async (loginInput: string, password: string): Promise<{ user_id: number, username: string, token: string, expiresIn: number }> => {
-  let UserLogin = await query<UserLogin[]>('SELECT * FROM User_login WHERE username = ?', [loginInput]);
+  let UserLogin = await query<UserLogin[]>('SELECT * FROM user_login WHERE username = ?', [loginInput]);
 
   if (UserLogin.length === 0) {
     throw new Error('用户不存在');
@@ -50,7 +50,7 @@ export const loginUser = async (loginInput: string, password: string): Promise<{
   }
 
   // 生成JWT token
-  const expiresIn = 3600; // 过期时间为3600秒（1小时）
+  const expiresIn = 36000; // 过期时间为36000秒（10小时）
   const token = 'Bearer ' + jwt.sign(
     { user_id: UserLogin[0].user_id, username: UserLogin[0].username },
     'ATTACK',
@@ -74,7 +74,7 @@ export const getUserInfo = async (user_id: number): Promise<UserInfo> => {
   const userInfo = await query<UserInfo[]>(
     `SELECT 
       gender, avatar, phone, email
-     FROM User_info 
+     FROM user_info 
      WHERE user_id = ?`,
     [user_id]
   );

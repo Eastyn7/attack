@@ -38,8 +38,12 @@ http.interceptors.request.use(
 			}
 		}
 
+		if (!config.headers['Content-Type']) {
+			config.headers['Content-Type'] = 'application/json' // 如果没有传递 Content-Type，则使用默认值
+		}
+
 		// 设置默认的 Content-Type
-		config.headers['Content-Type'] = 'application/json'
+		// config.headers['Content-Type'] = 'application/json'
 		return config
 	},
 	(error) => {
