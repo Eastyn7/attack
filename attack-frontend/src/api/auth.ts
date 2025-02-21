@@ -40,6 +40,19 @@ const getUserInfo = async (data: string, needToken = true) => {
 	}
 }
 
+// 更新用户信息请求
+const updateUserInfo = async (data: string, needToken = true) => {
+	try {
+		const response = await http.put('/user/updateuserinfo', data, {
+			needToken,
+		} as CustomRequestConfig)
+		return response
+	} catch (error) {
+		console.error('更新用户信息请求失败:', error)
+		throw error
+	}
+}
+
 // 上传数据文件请求
 const createDataList = async (data: FormData, needToken = true) => {
 	try {
@@ -71,7 +84,7 @@ const getDataList = async (data: string, needToken = true) => {
 	}
 }
 
-// 获取用户数据文件列表请求
+// 获取用户数据文件地址请求
 const getFilePath = async (data: string, needToken = true) => {
 	try {
 		const response = await http.post('/datalist/getfilepath', data, {
@@ -84,12 +97,41 @@ const getFilePath = async (data: string, needToken = true) => {
 	}
 }
 
+// 上传项目请求
+const createProjectList = async (data: string, needToken = true) => {
+	try {
+		const response = await http.post('/projectlist/createprojectlist', data, {
+			needToken,
+		} as CustomRequestConfig)
+		return response
+	} catch (error) {
+		console.error('上传项目请求失败:', error)
+		throw error
+	}
+}
+
+// 获取用户项目文件列表请求
+const getProjectList = async (data: string, needToken = true) => {
+	try {
+		const response = await http.post('/projectlist/getprojectlist', data, {
+			needToken,
+		} as CustomRequestConfig)
+		return response
+	} catch (error) {
+		console.error('获取用户项目文件列表请求失败:', error)
+		throw error
+	}
+}
+
 // 默认导出
 export default {
 	login,
 	register,
 	getUserInfo,
+	updateUserInfo,
 	createDataList,
 	getDataList,
 	getFilePath,
+	createProjectList,
+	getProjectList,
 }

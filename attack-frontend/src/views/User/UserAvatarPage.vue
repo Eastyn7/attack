@@ -2,32 +2,90 @@
 <script setup lang="ts">
 	import { Plus, Upload } from '@element-plus/icons-vue'
 	import { useUserStore } from '@/stores'
+	import { formToJson } from '@/utils/formToJson'
+	import type { ElUpload } from 'element-plus'
 
 	const userStore = useUserStore()
-
 	const imgUrl = ref<string | null>(userStore.userInfo.avatar)
-	const uploadRef = ref()
+	const uploadRef = ref<InstanceType<typeof ElUpload> | null>(null)
 
-	const onSelectFile = (uploadFile: any) => {
-		// 基于 FileReader 读取图片做预览
-		const reader = new FileReader()
-		reader.readAsDataURL(uploadFile.raw)
-		reader.onload = () => {
-			if (typeof reader.result === 'string') {
-				imgUrl.value = reader.result
+	// 压缩图片函数
+	const compressImage = (
+		file: File,
+		maxWidth = 800,
+		quality = 0.7,
+	): Promise<string> => {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader()
+			reader.readAsDataURL(file)
+			reader.onload = (event) => {
+				const img = new Image()
+				img.src = event.target?.result as string
+
+				img.onload = () => {
+					const canvas = document.createElement('canvas')
+					const ctx = canvas.getContext('2d')!
+
+					let width = img.width
+					let height = img.height
+
+					if (width > maxWidth) {
+						height = (height * maxWidth) / width
+						width = maxWidth
+					}
+
+					canvas.width = width
+					canvas.height = height
+					ctx.drawImage(img, 0, 0, width, height)
+
+					// 压缩图片质量
+					const compressedBase64 = canvas.toDataURL('image/jpeg', quality)
+					resolve(compressedBase64)
+				}
+
+				img.onerror = (error) => reject(error)
 			}
+
+			reader.onerror = (error) => reject(error)
+		})
+	}
+
+	const handleFileChange = async (uploadFile: any) => {
+		const file = uploadFile.raw as File
+		if (file) {
+			try {
+				// 基于 FileReader 读取图片做预览
+				const reader = new FileReader()
+				reader.readAsDataURL(file)
+				reader.onload = async () => {
+					if (typeof reader.result === 'string') {
+						// 压缩图片
+						const compressedBase64 = await compressImage(file)
+						imgUrl.value = compressedBase64
+						ElMessage.success('头像压缩并上传成功')
+					}
+				}
+			} catch (error) {
+				console.error('头像上传失败，请重试', error)
+			}
+		}
+	}
+
+	const handleSelectImage = () => {
+		if (uploadRef.value) {
+			uploadRef.value.$el.querySelector('input')?.click()
 		}
 	}
 
 	const onUpdateAvatar = async () => {
 		try {
 			// 发送请求更新头像
-			// await userUpdateAvatarService({
-			//  username: userStore.userInfo.user_id,
-			//  newAvatar: imgUrl.value,
-			// });
-
-			// 重新获取用户信息并更新 store
+			await userStore.updateUserInfo(
+				formToJson({
+					user_id: userStore.userInfo.user_id,
+					updates: { avatar: imgUrl.value },
+				}),
+			)
 
 			// 提示用户
 			ElMessage.success('头像更新成功')
@@ -44,8 +102,9 @@
 			ref="uploadRef"
 			:auto-upload="false"
 			class="avatar-uploader"
+			accept="image/*"
 			:show-file-list="false"
-			:on-change="onSelectFile"
+			:on-change="handleFileChange"
 		>
 			<img v-if="imgUrl" :src="imgUrl" class="avatar" />
 			<el-icon v-else class="avatar-uploader-icon">
@@ -56,7 +115,7 @@
 		<br />
 
 		<el-button
-			@click="uploadRef.$el.querySelector('input').click()"
+			@click="handleSelectImage"
 			type="primary"
 			:icon="Plus"
 			size="large"
@@ -76,33 +135,34 @@
 
 <style scoped>
 	.avatar-uploader {
-		:deep() {
-			.avatar {
-				width: 278px;
-				height: 278px;
-				display: block;
-			}
+		width: 278px;
+		height: 278px;
+		border: 1px dashed #000000;
+		border-radius: 6px;
+		cursor: pointer;
+		position: relative;
+		overflow: hidden;
+	}
 
-			.el-upload {
-				border: 1px dashed var(--el-border-color);
-				border-radius: 6px;
-				cursor: pointer;
-				position: relative;
-				overflow: hidden;
-				transition: var(--el-transition-duration-fast);
-			}
+	.avatar {
+		width: 278px;
+		height: 278px;
+		display: block;
+	}
 
-			.el-upload:hover {
-				border-color: var(--el-color-primary);
-			}
+	.avatar-uploader:hover {
+		border-color: #409eff;
+	}
 
-			.el-icon.avatar-uploader-icon {
-				font-size: 28px;
-				color: #8c939d;
-				width: 278px;
-				height: 278px;
-				text-align: center;
-			}
-		}
+	.avatar-uploader-icon {
+		font-size: 28px;
+		color: #8c939d;
+		width: 278px;
+		height: 278px;
+		text-align: center;
+	}
+
+	.avatar-uploader-icon:hover {
+		color: #409eff;
 	}
 </style>

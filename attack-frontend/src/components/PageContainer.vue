@@ -8,7 +8,14 @@
 </script>
 
 <template>
-	<el-card class="page-container">
+	<el-card
+		class="page-container"
+		:body-style="{
+			height: '85%',
+			overflow: 'auto',
+			scrollbarWidth: 'none',
+		}"
+	>
 		<template #header>
 			<div class="header">
 				<span>{{ title }}</span>
@@ -17,19 +24,22 @@
 				</div>
 			</div>
 		</template>
-		<slot></slot>
+		<template #default>
+			<slot></slot>
+		</template>
 	</el-card>
 </template>
 
 <style scoped>
 	.page-container {
-		min-height: 100%;
-		box-sizing: border-box;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+	}
 
-		.header {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-		}
+	.header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
 	}
 </style>

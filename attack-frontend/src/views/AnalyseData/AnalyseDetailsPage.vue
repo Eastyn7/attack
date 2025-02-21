@@ -2,13 +2,20 @@
 <script setup lang="ts">
 	import { UploadFilled } from '@element-plus/icons-vue'
 	import { useRoute } from 'vue-router'
+	import { useUserStore } from '@/stores'
+	import api from '@/api/index'
 	import * as XLSX from 'xlsx'
 
 	const loading = ref(false)
 	const isResult = ref(false)
 
 	const route = useRoute()
+	const userStore = useUserStore()
 	const receivedProjectName = ref('')
+	const receiveDataName = ref('')
+	const excelFilePath = ref('')
+	const dataHeaders = ref<string[]>([])
+	const auditOptions = ref<any[]>([])
 
 	const processItems = ref([
 		{
@@ -118,9 +125,8 @@
 		],
 	}
 
-	const method = ref('1')
+	const method = ref('')
 	const maxUploadLimit = ref(1)
-	const excelFileList = ref([]) // Excel 文件列表
 	const modelFileList = ref([]) // 模型文件列表
 
 	// 文件超出个数限制时的钩子
@@ -128,22 +134,6 @@
 		ElMessage.warning(
 			`只能选择 ${maxUploadLimit.value} 个文件，当前共选择了 ${newFiles.length + currentFileList.length} 个`,
 		)
-	}
-
-	// 处理 Excel 文件上传
-	const handleExcelChange = (file: any, fileList: any) => {
-		const fileExtension = file.name.substring(file.name.lastIndexOf('.') + 1)
-		const fileSize = file.size / 1024 / 1024
-
-		if (fileExtension !== 'xlsx' && fileExtension !== 'xls') {
-			ElMessage.warning('请上传Excel文件（后缀为.xlsx或.xls）')
-			return
-		}
-		if (fileSize > 5) {
-			ElMessage.warning('文件大小不得超过5M')
-			return
-		}
-		fileList.splice(0, fileList.length, file.raw) // 更新文件列表
 	}
 
 	// 处理训练模型文件上传（支持任意文件类型）
@@ -155,39 +145,6 @@
 			return
 		}
 		fileList.splice(0, fileList.length, file.raw) // 更新文件列表
-	}
-
-	// 上传 Excel 文件
-	const uploadExcelFile = async () => {
-		if (excelFileList.value.length === 0) {
-			ElMessage.warning('请上传数据集文件')
-			return
-		}
-
-		try {
-			const file = excelFileList.value[0]
-			const reader = new FileReader()
-
-			reader.onload = async (e) => {
-				const data = e.target?.result
-				const workbook = XLSX.read(data, { type: 'array' })
-				const sheetName = workbook.SheetNames[0]
-				const sheet = workbook.Sheets[sheetName]
-				const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 })
-
-				jsonData.shift() // 移除标题行
-				console.log('Excel 数据:', jsonData)
-
-				// 这里是数据处理的过程
-				// 这里是数据处理的过程
-				// 这里是数据处理的过程
-
-				ElMessage.success('数据集上传成功')
-			}
-			reader.readAsArrayBuffer(file)
-		} catch (error: any) {
-			ElMessage.error(error.response.data.message || '上传失败，请重试')
-		}
 	}
 
 	// 上传模型文件
@@ -213,9 +170,6 @@
 
 	// 取消选择的数据集或模型
 	const cancelUpload = (listName: any) => {
-		if (listName === excelFileList.value) {
-			excelFileList.value = []
-		}
 		if (listName === modelFileList.value) {
 			modelFileList.value = []
 		}
@@ -223,11 +177,7 @@
 
 	// 开始分析
 	const startAnalyse = async () => {
-		if (
-			excelFileList.value.length === 0 ||
-			modelFileList.value.length === 0 ||
-			!method.value
-		) {
+		if (modelFileList.value.length === 0 || !method.value) {
 			ElMessage.warning('请上传数据集文件和训练模型文件并选择审计方法')
 			return
 		}
@@ -245,9 +195,59 @@
 		})
 	}
 
+	// 获取数据文件中的表头
+	const loadExcelData = async (url: string): Promise<void> => {
+		try {
+			const response = await fetch(url)
+			const data = await response.arrayBuffer()
+
+			const workbook = XLSX.read(data, { type: 'array' })
+			const sheet = workbook.Sheets[workbook.SheetNames[0]] // 读取第一个工作表
+
+			// 初始化表头数组
+			const headerArray: string[] = []
+
+			// 获取表头范围
+			const range = XLSX.utils.decode_range(sheet['!ref'] as string)
+
+			// 遍历第一行的单元格
+			for (let col = range.s.c; col <= range.e.c; col++) {
+				const cellAddress = XLSX.utils.encode_cell({ r: range.s.r, c: col })
+				const cell = sheet[cellAddress]
+				if (cell) {
+					headerArray.push(cell.v.toString())
+				} else {
+					headerArray.push('')
+				}
+			}
+
+			// 将表头数据赋值给响应式变量
+			dataHeaders.value = headerArray
+		} catch (error) {
+			console.error('加载Excel文件出错:', error)
+		}
+	}
+
 	// 在页面加载时获取路由参数并赋值给响应式数据
-	onMounted(() => {
-		receivedProjectName.value = route.query.projectName as string
+	onMounted(async () => {
+		receivedProjectName.value = route.query.project_name as string
+		receiveDataName.value = route.query.data_name as string
+		try {
+			excelFilePath.value = await userStore.getFilePath(receiveDataName.value)
+			const auditsResponse = await api.audit.getAuditInfoList()
+			if (auditsResponse.status) {
+				auditOptions.value = auditsResponse.data.auditInfoList.map(
+					(item: any) => ({
+						value: item.audit_id,
+						label: item.audit_name,
+					}),
+				)
+			}
+		} catch (error) {
+			console.error('获取文件路径失败:', error)
+		}
+		// 获取表头
+		await loadExcelData(excelFilePath.value)
 	})
 </script>
 
@@ -271,42 +271,43 @@
 		</el-header>
 		<el-main class="ADP-main">
 			<el-container class="ADP-detail-container">
-				<el-aside>
-					<page-container title="上传数据集">
-						<el-upload
-							class="upload-demo"
-							drag
-							multiple
-							:limit="maxUploadLimit"
-							:auto-upload="false"
-							accept=".xlsx,.xls"
-							:on-change="handleExcelChange"
-							:on-exceed="exceedFileLimit"
-							v-model:file-list="excelFileList"
+				<el-aside class="aside-data">
+					<page-container title="选用数据集" class="aside-data-details">
+						<el-descriptions
+							class="data-descriptions"
+							:column="1"
+							size="small"
+							border
 						>
-							<el-icon class="el-icon--upload">
-								<UploadFilled />
-							</el-icon>
-							<div class="el-upload__text">
-								拖拽文件到此处 或 <em>点击上传</em>
-							</div>
-							<template #tip>
-								<div class="el-upload__tip">
-									只能上传.xlsx或.xls文件，且大小不超过5MB
-								</div>
-							</template>
-						</el-upload>
-						<br />
-						<el-button size="small" type="primary" @click="uploadExcelFile">
-							上传数据集
-						</el-button>
-						<el-button size="small" @click="cancelUpload(excelFileList)">
-							取消
-						</el-button>
+							<el-descriptions-item>
+								<template #label>
+									<div class="cell-item">数据集名称</div>
+								</template>
+								{{ receiveDataName }}
+							</el-descriptions-item>
+							<el-descriptions-item
+								v-for="(header, index) in dataHeaders"
+								:key="index"
+							>
+								<template #label>
+									<div class="cell-item">参数名 {{ index + 1 }}</div>
+								</template>
+								{{ header }}
+							</el-descriptions-item>
+						</el-descriptions>
+						<el-divider content-position="left">
+							前往
+							<router-link
+								to="/mydata"
+								style="text-decoration: none; color: #409eff"
+							>
+								上传新数据
+							</router-link>
+						</el-divider>
 					</page-container>
 				</el-aside>
 				<el-aside>
-					<page-container title="上传训练模型">
+					<page-container title="选用训练模型">
 						<el-upload
 							drag
 							multiple
@@ -342,10 +343,12 @@
 						<div class="methods">
 							选择审计方法：
 							<el-radio-group v-model="method" size="large">
-								<el-radio-button label="1" value="1" />
-								<el-radio-button label="2" value="2" />
-								<el-radio-button label="3" value="3" />
-								<el-radio-button label="4" value="4" />
+								<el-radio-button
+									v-for="(audit, index) in auditOptions"
+									:key="index"
+									:label="audit.label"
+									:value="audit.value"
+								/>
 							</el-radio-group>
 						</div>
 						<el-button size="large" type="primary" @click="startAnalyse"
@@ -363,76 +366,74 @@
 								<el-button type="primary" plain>分享</el-button>
 							</template>
 							<el-empty v-if="!isResult"></el-empty>
-							<el-container class="result-details-container" v-else>
-								<el-main class="result-details-main">
-									<!-- 分析流程 -->
-									<div class="fenxiliucheng">
-										<el-text class="process-title" size="large">
-											分析流程
-										</el-text>
-										<el-steps
-											class="result-details-process"
-											:active="4"
-											direction="vertical"
+							<div v-else class="result-details-container">
+								<!-- 分析流程 -->
+								<div class="fenxiliucheng">
+									<el-text class="process-title" size="large">
+										分析流程
+									</el-text>
+									<el-steps
+										class="result-details-process"
+										:active="4"
+										direction="vertical"
+									>
+										<el-step
+											v-for="item in processItems"
+											:key="item.title"
+											:title="item.title"
 										>
-											<el-step
-												v-for="item in processItems"
-												:key="item.title"
-												:title="item.title"
-											>
-												<template #icon>
-													<span :class="item.iconClass"></span>
-												</template>
-												<template #description>
-													<el-link v-if="item.description">{{
-														item.description
-													}}</el-link>
-												</template>
-											</el-step>
-										</el-steps>
-									</div>
-									<!-- 分析步骤 -->
-									<div class="fenxibuzhou">
-										<el-text class="process-title" size="large">
-											分析步骤
-										</el-text>
-										<el-text class="process-content">
-											1. 初步检查数据中是否存在缺失值、异常值或不一致的情况。
-										</el-text>
-										<el-text class="process-content">
-											2.
-											揭示数据的分布、范围和变化情况，从而帮助选择适合的分析方法。
-										</el-text>
-									</div>
-									<!-- 详细结论 -->
-									<div class="xiangxijielun">
-										<el-text class="process-title" size="large">
-											详细结论
-										</el-text>
-										<div class="result-chart-container">
-											<div style="height: 300px; width: 500px">
-												<e-charts class="chart" :option="option1" />
-											</div>
-											<div style="height: 300px; width: 500px">
-												<e-charts class="chart" :option="option2" />
-											</div>
+											<template #icon>
+												<span :class="item.iconClass"></span>
+											</template>
+											<template #description>
+												<el-link v-if="item.description">{{
+													item.description
+												}}</el-link>
+											</template>
+										</el-step>
+									</el-steps>
+								</div>
+								<!-- 分析步骤 -->
+								<div class="fenxibuzhou">
+									<el-text class="process-title" size="large">
+										分析步骤
+									</el-text>
+									<el-text class="process-content">
+										1. 初步检查数据中是否存在缺失值、异常值或不一致的情况。
+									</el-text>
+									<el-text class="process-content">
+										2.
+										揭示数据的分布、范围和变化情况，从而帮助选择适合的分析方法。
+									</el-text>
+								</div>
+								<!-- 详细结论 -->
+								<div class="xiangxijielun">
+									<el-text class="process-title" size="large">
+										详细结论
+									</el-text>
+									<div class="result-chart-container">
+										<div style="height: 300px; width: 400px">
+											<e-charts class="chart" :option="option1" />
+										</div>
+										<div style="height: 300px; width: 400px">
+											<e-charts class="chart" :option="option2" />
 										</div>
 									</div>
-									<!-- 分析建议 -->
-									<div class="fenxijianyi">
-										<el-text class="process-title" size="large">
-											分析建议
-										</el-text>
-										<el-text class="process-content">
-											1. 初步检查数据中是否存在缺失值、异常值或不一致的情况。
-										</el-text>
-										<el-text class="process-content">
-											2.
-											揭示数据的分布、范围和变化情况，从而帮助选择适合的分析方法。
-										</el-text>
-									</div>
-								</el-main>
-							</el-container>
+								</div>
+								<!-- 分析建议 -->
+								<div class="fenxijianyi">
+									<el-text class="process-title" size="large">
+										分析建议
+									</el-text>
+									<el-text class="process-content">
+										1. 初步检查数据中是否存在缺失值、异常值或不一致的情况。
+									</el-text>
+									<el-text class="process-content">
+										2.
+										揭示数据的分布、范围和变化情况，从而帮助选择适合的分析方法。
+									</el-text>
+								</div>
+							</div>
 						</page-container>
 					</el-main>
 				</el-container>
@@ -472,6 +473,17 @@
 		padding-top: 0;
 	}
 
+	.aside-data {
+		padding: 0;
+	}
+
+	.cell-item {
+		font-weight: bold;
+		display: flex;
+		align-items: center;
+		justify-content: start;
+	}
+
 	.ADP-detail-container {
 		width: 100%;
 		height: 100%;
@@ -500,24 +512,12 @@
 	}
 
 	.result-main-details {
-		width: 100%;
-		height: 100%;
 		padding: 0;
-		position: relative;
+		/* position: relative; */
 	}
 
 	.result-details-container {
-		width: 95%;
-		height: 80%;
 		padding: 0;
-		position: absolute;
-
-		.result-details-main {
-			width: 100%;
-			height: 100%;
-			padding: 0;
-			overflow: auto;
-		}
 
 		.result-details-process {
 			width: 100%;

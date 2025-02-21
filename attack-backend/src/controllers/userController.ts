@@ -51,17 +51,17 @@ export const getUserInfo = async (req: Request, res: Response): Promise<void> =>
   }
 }
 
-// export const updateUserInfo = async (req: Request, res: Response): Promise<void> => {
-//   const { user_id, updates } = req.body
+export const updateUserInfo = async (req: Request, res: Response): Promise<void> => {
+  const { user_id, updates } = req.body
 
-//   try {
-//     const result = await userService.updateUserInfo(user_id, updates)
-//     successResponse(res, {}, result, 200)
-//   } catch (error) {
-//     if (error instanceof Error) {
-//       errorResponse(res, error.message, 400)
-//     } else {
-//       errorResponse(res, "服务器内部错误", 500)
-//     }
-//   }
-// }
+  try {
+    const result = await userService.updateUserInfo(user_id, updates)
+    successResponse(res, {}, result, 200)
+  } catch (error) {
+    if (error instanceof Error) {
+      errorResponse(res, error.message, 400)
+    } else {
+      errorResponse(res, "服务器内部错误", 500)
+    }
+  }
+}

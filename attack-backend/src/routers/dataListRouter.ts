@@ -1,6 +1,5 @@
 import { Router } from 'express'
 import { createDataList, getDataList, getFilePath } from '../controllers/dataController'
-// import { upload } from '../app'
 import multer from 'multer'
 // 配置 multer 使用内存存储
 const storage = multer.memoryStorage();

@@ -45,6 +45,7 @@
 	}
 	const cancelUploadClick = () => {
 		fileList.value = []
+		formData.value.data_name = ''
 		drawer.value = false
 	}
 
@@ -62,6 +63,9 @@
 			ElMessage.warning('请上传Excel文件（后缀为.xlsx或.xls）')
 			return false
 		}
+
+		console.log((Number(file.size) / 1024 / 1024).toFixed(2))
+
 		if (file.size && file.size / 1024 / 1024 > 5) {
 			ElMessage.warning('文件大小不得超过5M')
 			return false
@@ -151,7 +155,12 @@
 							{{ row.data_name }}
 						</template>
 					</el-table-column>
-					<el-table-column label="更新时间" prop="updated_at" width="400">
+					<el-table-column label="文件大小" prop="file_size" width="300">
+						<template #default="{ row }">
+							{{ row.file_size.toFixed(2) }} MB
+						</template>
+					</el-table-column>
+					<el-table-column label="更新时间" prop="updated_at" width="300">
 						<template #default="{ row }">
 							{{ formatDate(row.updated_at) }}
 						</template>

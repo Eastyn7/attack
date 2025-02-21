@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { getUserInfo } from '../controllers/userController'
+import { getUserInfo, updateUserInfo } from '../controllers/userController'
 
 const router = Router()
 
@@ -7,6 +7,6 @@ const router = Router()
 router.post('/getuserinfo', getUserInfo)
 
 // 更新用户信息
-// router.put('/updateuserinfo', updateUserInfo)
+router.put('/updateuserinfo', updateUserInfo)
 
 export default router

@@ -84,6 +84,21 @@ export const useUserStore = defineStore(StoreNames.USER, {
 				throw error
 			}
 		},
+		// 更新信息
+		async updateUserInfo(data: string) {
+			try {
+				const result = await api.auth.updateUserInfo(data)
+
+				if (result.status) {
+					// 更新成功，重新获取最新的用户信息
+					const jsonData = formToJson({ user_id: this.userInfo.user_id })
+					await this.getUserInfo(jsonData)
+				}
+			} catch (error) {
+				console.error('更新用户信息失败', error)
+				throw error
+			}
+		},
 		// 退出登录
 		logOut() {
 			if (this.rememberMe) {
@@ -122,7 +137,7 @@ export const useUserStore = defineStore(StoreNames.USER, {
 			}
 		},
 
-		// 添加文件列表
+		// 添加我的数据文件列表
 		async createDataList(data_name: string, data_file: UploadRawFile) {
 			try {
 				// 创建 FormData 对象
@@ -168,6 +183,38 @@ export const useUserStore = defineStore(StoreNames.USER, {
 				}
 			} catch (error) {
 				console.error('获取用户数据文件列表失败', error)
+				throw error
+			}
+		},
+
+		// 添加分析项目
+		async createProjectList(project_name: string, data_id: number) {
+			try {
+				const data = formToJson({
+					user_id: this.userInfo.user_id,
+					data_id,
+					project_name,
+				})
+				const result = await api.auth.createProjectList(data)
+				if (result.status) {
+					return result.data.projectList
+				}
+			} catch (error) {
+				console.error('添加分析项目失败', error)
+				throw error
+			}
+		},
+		// 获取用户分析项目列表
+		async getProjectList() {
+			try {
+				const jsonData = formToJson({ user_id: this.userInfo.user_id })
+				const result = await api.auth.getProjectList(jsonData)
+
+				if (result.status) {
+					return result.data.projectList
+				}
+			} catch (error) {
+				console.error('获取用户分析项目列表失败', error)
 				throw error
 			}
 		},

@@ -13,10 +13,14 @@ export const createDataList = async (user_id: number, data_name: string, data_fi
   // 将文件上传到 OSS，获取 URL
   const file_path = await uploadExcelToOSS(data_file, data_name);
 
-  // 插入新数据到 data_list 表
+  // 计算文件大小（单位：MB），保留两位小数
+  const fileSizeInBytes = data_file.length;
+  const fileSizeInMB = parseFloat((fileSizeInBytes / (1024 * 1024)).toFixed(2));
+
+  // 插入新数据到 data_list 表，包含 file_size 字段
   const result = await query<{ insertId: number }>(
-    'INSERT INTO data_list (user_id, data_name, file_path) VALUES (?, ?, ?)',
-    [user_id, data_name, file_path]
+    'INSERT INTO data_list (user_id, data_name, file_path, file_size) VALUES (?, ?, ?, ?)',
+    [user_id, data_name, file_path, fileSizeInMB]
   );
 
   // 获取新插入的 data_id
@@ -29,7 +33,7 @@ export const createDataList = async (user_id: number, data_name: string, data_fi
 // 获取数据列表
 export const getDataList = async (user_id: number): Promise<DataList[]> => {
   // 查询当前用户的所有数据
-  const dataList = await query<DataList[]>('SELECT data_name, updated_at FROM data_list WHERE user_id = ?', [user_id]);
+  const dataList = await query<DataList[]>('SELECT data_id, data_name, file_size, updated_at FROM data_list WHERE user_id = ?', [user_id]);
 
   if (dataList.length === 0) {
     throw new Error('没有找到数据');
