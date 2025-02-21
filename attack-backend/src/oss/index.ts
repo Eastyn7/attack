@@ -3,9 +3,9 @@ import OSS from 'ali-oss';
 // 初始化 OSS 客户端
 const client = new OSS({
   region: 'oss-cn-chengdu', 
-  accessKeyId: 'LTAI5tPMxqNbJ91VyJqcgGoV', 
-  accessKeySecret: 'IeGTiMcbZYK2WtSfj05uR2bUucUqVX', 
-  bucket: 'attack-oss',
+  accessKeyId: '', 
+  accessKeySecret: '', 
+  bucket: '',
 });
 
 // 上传 Excel 文件到 OSS
