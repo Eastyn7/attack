@@ -1,6 +1,6 @@
 import { query } from '../db';
 import { DataList } from '../types';
-import { uploadExcelToOSS } from '../oss'
+import { uploadExcelToOSS, deleteFileFromOSS, extractFileNameFromOSSUrl } from '../oss'
 
 // 创建数据
 export const createDataList = async (user_id: number, data_name: string, data_file: Buffer): Promise<any> => {
@@ -46,8 +46,6 @@ export const getDataList = async (user_id: number): Promise<DataList[]> => {
 
 // 获取对应数据表链接地址
 export const getFilePath = async (user_id: number, data_name: string): Promise<string> => {
-  // 修正 SQL 查询语句，使用 AND 连接多个条件
-  // 明确查询结果是包含 RowDataPacket 对象的数组，每个对象有 file_path 属性
   const result = await query<{ file_path: string }[]>('SELECT file_path FROM data_list WHERE user_id = ? AND data_name = ?', [user_id, data_name]);
 
   // 检查查询结果数组的长度，如果为 0 则抛出错误
@@ -60,6 +58,34 @@ export const getFilePath = async (user_id: number, data_name: string): Promise<s
 
   // 返回单个文件路径字符串
   return filePath;
+};
+
+
+// 删除数据文件
+export const deleteDataFile = async (user_id: number, data_name: string): Promise<void> => {
+  try {
+    // 查询要删除的数据文件的路径
+    const result = await query<{ file_path: string }[]>('SELECT file_path FROM data_list WHERE user_id = ? AND data_name = ?', [user_id, data_name]);
+
+    // 检查查询结果数组的长度，如果为 0 则抛出错误
+    if (result.length === 0) {
+      throw new Error('没有找到数据');
+    }
+
+    // 从数组中提取第一个元素的 file_path 属性
+    const filePath = result[0].file_path;
+
+    // 从完整 OSS URL 中提取文件名
+    const ossFileName = extractFileNameFromOSSUrl(filePath);
+
+    // 从 OSS 中删除对应的文件
+    await deleteFileFromOSS(ossFileName);
+
+    // 从数据库中删除对应的记录
+    await query('DELETE FROM data_list WHERE user_id = ? AND data_name = ?', [user_id, data_name]);
+  } catch (error) {
+    throw error;
+  }
 };
 
 

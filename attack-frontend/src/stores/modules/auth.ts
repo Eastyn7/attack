@@ -186,6 +186,22 @@ export const useUserStore = defineStore(StoreNames.USER, {
 				throw error
 			}
 		},
+		// 删除数据文件
+		async deleteDataFile(data_name: string) {
+			try {
+				const jsonData = formToJson({
+					user_id: this.userInfo.user_id,
+					data_name,
+				})
+				const result = await api.auth.deleteDataFile(jsonData)
+				if (result.status) {
+					return '删除成功'
+				}
+			} catch (error) {
+				console.error('删除文件失败', error)
+				throw error
+			}
+		},
 
 		// 添加分析项目
 		async createProjectList(project_name: string, data_id: number) {

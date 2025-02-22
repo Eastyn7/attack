@@ -2,10 +2,11 @@
 <script setup lang="ts">
 	import {
 		More,
-		Edit,
+		// Edit,
 		Delete,
 		Document,
 		UploadFilled,
+		Download,
 	} from '@element-plus/icons-vue'
 	import { useUserStore } from '@/stores'
 	import { formatDate } from '@/utils/util'
@@ -36,7 +37,6 @@
 			},
 		})
 	}
-
 	const handleMore = (event: MouseEvent) => {
 		event.stopPropagation()
 	}
@@ -47,6 +47,37 @@
 		fileList.value = []
 		formData.value.data_name = ''
 		drawer.value = false
+	}
+	const handleDownload = async (row: any) => {
+		const loading = ref(true)
+		try {
+			const excelFilePath = await userStore.getFilePath(row.data_name)
+			const link = document.createElement('a')
+			link.href = excelFilePath
+			link.setAttribute('download', row.data_name)
+			link.click()
+
+			ElMessage.success('下载成功')
+		} catch (error: any) {
+			ElMessage.error(error.message || '下载失败')
+		} finally {
+			loading.value = false
+		}
+	}
+	const handleDelete = async (row: any) => {
+		const loading = ref(true)
+		try {
+			const result = await userStore.deleteDataFile(row.data_name)
+			if (result) {
+				ElMessage.success(result)
+			}
+			const data = await userStore.getDataList()
+			projectList.value = data
+		} catch (error: any) {
+			ElMessage.error(error.message || '删除失败')
+		} finally {
+			loading.value = false
+		}
 	}
 
 	// 文件超出个数限制时的钩子
@@ -166,7 +197,7 @@
 						</template>
 					</el-table-column>
 					<el-table-column label="操作" width="100">
-						<template #default="">
+						<template #default="{ row }">
 							<el-dropdown placement="bottom-end">
 								<el-button
 									circle
@@ -177,13 +208,13 @@
 								></el-button>
 								<template #dropdown>
 									<el-dropdown-menu>
-										<el-dropdown-item>
+										<el-dropdown-item @click="handleRowClick(row)">
 											<el-icon> <Document /> </el-icon>查看详情
 										</el-dropdown-item>
-										<el-dropdown-item>
-											<el-icon> <Edit /> </el-icon>重命名
+										<el-dropdown-item @click="handleDownload(row)">
+											<el-icon> <Download /> </el-icon>下载
 										</el-dropdown-item>
-										<el-dropdown-item>
+										<el-dropdown-item @click="handleDelete(row)">
 											<el-icon> <Delete /> </el-icon>删除
 										</el-dropdown-item>
 									</el-dropdown-menu>

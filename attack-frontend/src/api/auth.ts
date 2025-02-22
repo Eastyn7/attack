@@ -97,6 +97,20 @@ const getFilePath = async (data: string, needToken = true) => {
 	}
 }
 
+// 删除数据文件
+const deleteDataFile = async (data: string, needToken = true) => {
+	try {
+		const response = await http.delete('/datalist/deletedatafile', {
+			data,
+			...({ needToken } as CustomRequestConfig),
+		})
+		return response
+	} catch (error) {
+		console.error('获取用户数据文件列表请求失败:', error)
+		throw error
+	}
+}
+
 // 上传项目请求
 const createProjectList = async (data: string, needToken = true) => {
 	try {
@@ -132,6 +146,7 @@ export default {
 	createDataList,
 	getDataList,
 	getFilePath,
+	deleteDataFile,
 	createProjectList,
 	getProjectList,
 }

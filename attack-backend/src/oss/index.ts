@@ -57,3 +57,18 @@ export const uploadImageToOSS = async (base64Image: string): Promise<string> => 
     throw new Error('上传到 OSS 失败');
   }
 };
+
+// 从 OSS 删除文件
+export const deleteFileFromOSS = async (fileName: string): Promise<void> => {
+  try {
+    await client.delete(fileName);
+  } catch (error) {
+    throw new Error('从 OSS 删除文件失败');
+  }
+};
+
+// 从完整 OSS URL 中提取文件名
+export const extractFileNameFromOSSUrl = (url: string): string => {
+  const parts = url.split('/');
+  return parts[parts.length - 1];
+};

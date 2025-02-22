@@ -67,7 +67,6 @@ export const loginUser = async (loginInput: string, password: string): Promise<{
 };
 
 
-
 // 获取用户的信息
 export const getUserInfo = async (user_id: number): Promise<UserInfo> => {
   // 查询用户详细信息

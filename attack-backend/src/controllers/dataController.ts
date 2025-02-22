@@ -70,6 +70,24 @@ export const getFilePath = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
+// 删除数据文件
+export const deleteDataFile = async (req: Request, res: Response): Promise<void> => {
+  const { user_id, data_name } = req.body
+
+  try {
+    // 调用服务层删除数据文件逻辑
+    await dataService.deleteDataFile(Number(user_id), data_name)
+  
+    successResponse(res, {}, '数据文件删除成功', 200)
+  } catch (error) {
+    if (error instanceof Error) {
+      errorResponse(res, error.message, 400)
+    } else {
+      errorResponse(res, "服务器内部错误", 500)
+    }
+  }
+};
+
 // // 更新数据
 // export const updateDataList = async (req: Request, res: Response): Promise<void> => {
 //   const { data_id, data_name, other_data } = req.body
