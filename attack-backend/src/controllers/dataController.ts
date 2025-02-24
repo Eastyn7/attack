@@ -104,20 +104,3 @@ export const deleteDataFile = async (req: Request, res: Response): Promise<void>
 //     }
 //   }
 // }
-
-// // 删除数据
-// export const deleteDataList = async (req: Request, res: Response): Promise<void> => {
-//   const { data_id } = req.params
-
-//   try {
-//     // 调用服务层删除数据逻辑
-//     const deleteMessage = await dataService.deleteDataList(Number(data_id))
-//     successResponse(res, deleteMessage, '数据删除成功', 200)
-//   } catch (error) {
-//     if (error instanceof Error) {
-//       errorResponse(res, error.message, 400)
-//     } else {
-//       errorResponse(res, "服务器内部错误", 500)
-//     }
-//   }
-// }

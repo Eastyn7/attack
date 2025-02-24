@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { query } from '../db';
 import { User, UserRegister, UserLogin, UserInfo, UpdateUserInfo } from '../types';
 import { hashPassword, comparePassword } from '../utils/hashPassword';
-import { uploadImageToOSS } from '../oss'
+import { uploadImageToOSS, extractFileNameFromOSSUrl, deleteFileFromOSS } from '../oss'
 
 // 注册用户
 export const registerUser = async (username: string, password: string): Promise<UserRegister> => {
@@ -95,9 +95,19 @@ export const updateUserInfo = async (user_id: number, updates: UpdateUserInfo): 
   // 获取 UpdateUserInfo 类型中允许的字段
   const allowedFields: Array<keyof UpdateUserInfo> = ['username', 'phone', 'gender', 'avatar', 'email'];
 
+  let oldAvatarUrl: string | null = null
   // 如果有 avatar 字段，首先上传图片到阿里云
   if (updates.avatar) {
     try {
+      // 查询旧头像 URL
+      const oldAvatar = await query<{avatar: string}[]>(
+        `SELECT avatar FROM user_info WHERE user_id = ?`,
+        [user_id]
+      );
+      if (oldAvatar.length > 0) {
+        oldAvatarUrl = oldAvatar[0].avatar;
+      }
+      
       // 将 base64 图片上传到 OSS，获取 URL
       const avatarUrl = await uploadImageToOSS(updates.avatar);
       updates.avatar = avatarUrl; // 替换为上传到 OSS 后的图片 URL
@@ -125,6 +135,15 @@ export const updateUserInfo = async (user_id: number, updates: UpdateUserInfo): 
 
   try {
     const result = await query<{ affectedRows: number }>(updateQuery, values);
+
+    // 如果更新成功且有旧头像 URL，则删除旧头像文件
+    if (oldAvatarUrl) { 
+      // 从完整 OSS URL 中提取文件名
+      const ossFileName = extractFileNameFromOSSUrl(oldAvatarUrl);
+      // 从 OSS 中删除对应的文件
+      await deleteFileFromOSS(ossFileName);
+    }
+
     return result.affectedRows > 0 ? '更新成功' : '用户不存在或无更改';
   } catch (error) {
     throw new Error('更新用户信息失败');
