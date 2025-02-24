@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 
-const UNPROTECTED_PATH_REGEX = /^\/api\/public|^\/api\/datalist\/createdatalist/; // 匹配所有以 /api/public 开头的路径
+const UNPROTECTED_PATH_REGEX = /^\/api\/public|^\/api\/datalist\/createdatalist|^\/api\/ai/; // 匹配所有以 /api/public 开头的路径
 
 // 中间件：验证 JWT token
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): any => {

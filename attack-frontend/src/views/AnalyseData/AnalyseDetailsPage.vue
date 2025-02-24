@@ -13,30 +13,35 @@
 	const userStore = useUserStore()
 	const receivedProjectName = ref('')
 	const receiveDataName = ref('')
+	const modelName = ref('')
 	const excelFilePath = ref('')
 	const dataHeaders = ref<string[]>([])
 	const auditOptions = ref<any[]>([])
+	const method = ref('')
+	const maxUploadLimit = ref(1)
+	const modelFileList = ref([])
 
 	const processItems = ref([
 		{
 			title: '数据集',
 			iconClass: 'iconfont icon-shujuji',
-			description: '数据集文件链接',
+			description: '数据集文件名称及链接',
 		},
 		{
 			title: '训练模型',
 			iconClass: 'iconfont icon-shujumoxing',
-			description: '训练模型文件链接',
+			description: '训练模型文件名称',
 		},
 		{
 			title: '审计方法',
 			iconClass: 'iconfont icon-fenxipeizhi',
-			description: '您选用的审计方法：1',
+			description: '您选用的审计方法：对应审计方法名称',
 		},
 		{
 			title: '分析结果',
 			iconClass: 'iconfont icon-fenxijieguo',
-			description: '以下是对您的数据集及训练模型根据（）审计方法得到的结果',
+			description:
+				'以下是对您的数据集（数据集文件名称）及训练模型（模型文件名称）根据（对应审计方法）审计方法得到的结果',
 		},
 	])
 
@@ -125,76 +130,6 @@
 		],
 	}
 
-	const method = ref('')
-	const maxUploadLimit = ref(1)
-	const modelFileList = ref([]) // 模型文件列表
-
-	// 文件超出个数限制时的钩子
-	const exceedFileLimit = (newFiles: any, currentFileList: any) => {
-		ElMessage.warning(
-			`只能选择 ${maxUploadLimit.value} 个文件，当前共选择了 ${newFiles.length + currentFileList.length} 个`,
-		)
-	}
-
-	// 处理训练模型文件上传（支持任意文件类型）
-	const handleModelChange = (file: any, fileList: any) => {
-		const fileSize = file.size / 1024 / 1024
-		if (fileSize > 10) {
-			// 设置最大10MB限制
-			ElMessage.warning('文件大小不得超过10M')
-			return
-		}
-		fileList.splice(0, fileList.length, file.raw) // 更新文件列表
-	}
-
-	// 上传模型文件
-	const uploadModelFile = async () => {
-		if (modelFileList.value.length === 0) {
-			ElMessage.warning('请上传训练模型文件')
-			return
-		}
-
-		try {
-			const file = modelFileList.value[0]
-			console.log('模型文件:', file)
-
-			// 这里是数据处理的过程
-			// 这里是数据处理的过程
-			// 这里是数据处理的过程
-
-			ElMessage.success('训练模型上传成功')
-		} catch (error: any) {
-			ElMessage.error(error.response.data.message || '上传失败，请重试')
-		}
-	}
-
-	// 取消选择的数据集或模型
-	const cancelUpload = (listName: any) => {
-		if (listName === modelFileList.value) {
-			modelFileList.value = []
-		}
-	}
-
-	// 开始分析
-	const startAnalyse = async () => {
-		if (modelFileList.value.length === 0 || !method.value) {
-			ElMessage.warning('请上传数据集文件和训练模型文件并选择审计方法')
-			return
-		}
-		// 先将loading设置为true
-		loading.value = true
-		// 使用定时器，等待5秒
-		await new Promise((resolve) => {
-			setTimeout(() => {
-				// 5秒后将loading改为false
-				loading.value = false
-				// 同时将isResult设置为true
-				isResult.value = true
-				resolve(true)
-			}, 5000)
-		})
-	}
-
 	// 获取数据文件中的表头
 	const loadExcelData = async (url: string): Promise<void> => {
 		try {
@@ -226,6 +161,82 @@
 		} catch (error) {
 			console.error('加载Excel文件出错:', error)
 		}
+	}
+
+	// 文件超出个数限制时的钩子
+	const exceedFileLimit = (newFiles: any, currentFileList: any) => {
+		ElMessage.warning(
+			`只能选择 ${maxUploadLimit.value} 个文件，当前共选择了 ${newFiles.length + currentFileList.length} 个`,
+		)
+	}
+	// 处理训练模型文件上传
+	const handleModelChange = (file: any, fileList: any) => {
+		modelName.value = file.name // 更新模型名称
+		fileList.splice(0, fileList.length, file.raw) // 更新文件列表
+	}
+	// 取消选择的模型
+	const cancelUpload = (listName: any) => {
+		if (listName === modelFileList.value) {
+			modelFileList.value = []
+		}
+	}
+	// 上传模型文件
+	const uploadModelFile = async () => {
+		if (modelFileList.value.length === 0) {
+			ElMessage.warning('请上传训练模型文件')
+			return
+		}
+
+		try {
+			const file = modelFileList.value[0]
+			console.log('模型文件:', file)
+
+			// 这里是数据处理的过程
+			// 这里是数据处理的过程
+			// 这里是数据处理的过程
+
+			ElMessage.success('训练模型上传成功')
+		} catch (error: any) {
+			ElMessage.error(error.response.data.message || '上传失败，请重试')
+		}
+	}
+
+	// 开始分析
+	const startAnalyse = async () => {
+		if (modelFileList.value.length === 0 || !method.value) {
+			ElMessage.warning('请上传训练模型文件并选择审计方法')
+			return
+		}
+
+		// 先将loading设置为true
+		loading.value = true
+
+		// 更新分析流程中的描述
+		processItems.value.forEach((item) => {
+			if (item.title === '数据集') {
+				item.description = `${receiveDataName.value}`
+			}
+			if (item.title === '训练模型') {
+				item.description = `${modelName.value}` // 这里只是示例，取第一个模型文件的名称
+			}
+			if (item.title === '审计方法') {
+				item.description = `您选用的审计方法：${auditOptions.value.find((option) => option.value === method.value).label}`
+			}
+			if (item.title === '分析结果') {
+				item.description = `以下是对您的数据集（${receiveDataName.value}）及训练模型（${modelName.value}）根据${auditOptions.value.find((option) => option.value === method.value).label}审计方法得到的结果`
+			}
+		})
+
+		// 使用定时器，等待5秒
+		await new Promise((resolve) => {
+			setTimeout(() => {
+				// 5秒后将loading改为false
+				loading.value = false
+				// 同时将isResult设置为true
+				isResult.value = true
+				resolve(true)
+			}, 5000)
+		})
 	}
 
 	// 在页面加载时获取路由参数并赋值给响应式数据

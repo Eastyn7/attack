@@ -4,6 +4,7 @@ import userRoutes from './userRouter'
 import dataListRoutes from './dataListRouter'
 import projectListRoutes from './projectListRouter'
 import auditInfoListRoutes from './auditInfoRouter'
+import aiRouter from './aiRouter'
 
 const router = Router()
 
@@ -12,5 +13,6 @@ router.use('/user', userRoutes) // 用户相关的API
 router.use('/datalist', dataListRoutes) // 数据表相关的API
 router.use('/projectlist', projectListRoutes) // 项目表相关的API
 router.use('/audit', auditInfoListRoutes) // 审计方法相关的API
+router.use('/ai', aiRouter) // ai相关的API
 
 export default router;

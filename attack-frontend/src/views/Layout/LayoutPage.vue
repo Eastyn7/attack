@@ -109,14 +109,19 @@
 					</el-dropdown>
 				</el-menu>
 			</el-header>
-
+			<!-- 中间主体内容 -->
 			<el-main style="height: 85vh; padding-top: 0">
 				<el-container class="layou-main">
 					<router-view></router-view>
 				</el-container>
 			</el-main>
-
-			<el-footer style="height: 5vh">ATTACK - Created by ATTACK-TEAM</el-footer>
+			<!-- 底部页脚部分 -->
+			<el-footer class="footer">
+				<h4>ATTACK - 重庆工商大学1队&nbsp;</h4>
+				<a href="https://beian.miit.gov.cn/" target="_blank">
+					<h4>蜀ICP备2023043183号-1</h4>
+				</a>
+			</el-footer>
 		</el-container>
 	</div>
 </template>
@@ -164,6 +169,11 @@
 		justify-content: center;
 		font-size: 14px;
 		color: #666;
+		height: 5vh;
+
+		h4 {
+			margin: 0;
+		}
 	}
 
 	.el-menu--horizontal > .el-menu-item:nth-child(1) {
