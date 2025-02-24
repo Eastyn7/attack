@@ -106,7 +106,7 @@ const deleteDataFile = async (data: string, needToken = true) => {
 		})
 		return response
 	} catch (error) {
-		console.error('获取用户数据文件列表请求失败:', error)
+		console.error('删除用户数据文件请求失败:', error)
 		throw error
 	}
 }
@@ -137,6 +137,20 @@ const getProjectList = async (data: string, needToken = true) => {
 	}
 }
 
+// 删除项目
+const deleteProject = async (data: string, needToken = true) => {
+	try {
+		const response = await http.delete('/projectlist/deleteproject', {
+			data,
+			...({ needToken } as CustomRequestConfig),
+		})
+		return response
+	} catch (error) {
+		console.error('删除项目失败:', error)
+		throw error
+	}
+}
+
 // 默认导出
 export default {
 	login,
@@ -149,4 +163,5 @@ export default {
 	deleteDataFile,
 	createProjectList,
 	getProjectList,
+	deleteProject,
 }

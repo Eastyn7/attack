@@ -49,7 +49,7 @@
 		drawer.value = false
 	}
 	const handleDownload = async (row: any) => {
-		const loading = ref(true)
+		loading.value = true
 		try {
 			const excelFilePath = await userStore.getFilePath(row.data_name)
 			const link = document.createElement('a')
@@ -65,7 +65,7 @@
 		}
 	}
 	const handleDelete = async (row: any) => {
-		const loading = ref(true)
+		loading.value = true
 		try {
 			const result = await userStore.deleteDataFile(row.data_name)
 			if (result) {
@@ -86,7 +86,6 @@
 			`只能选择 ${limitNum.value} 个文件，当前共选择了 ${files.length + fileList.length} 个`,
 		)
 	}
-
 	// 文件状态改变时的钩子
 	const fileChange = (file: UploadFile) => {
 		const extension = file.name?.split('.').pop()?.toLowerCase()
@@ -103,7 +102,7 @@
 		}
 		formData.value.data_file = file.raw
 	}
-
+	// 提交上传文件表单
 	const submitForm = async () => {
 		if (!formData.value.data_name) {
 			ElMessage.warning('请输入文件名')

@@ -35,3 +35,21 @@ export const getProjectList = async (req: Request, res: Response): Promise<void>
     }
   }
 }
+
+// 删除项目
+export const deleteProject = async (req: Request, res: Response): Promise<void> => {
+  const { user_id, project_name } = req.body
+
+  try {
+    // 调用服务层删除项目逻辑
+    await projectService.deleteProject(Number(user_id), project_name)
+
+    successResponse(res, {}, '项目删除成功', 200)
+  } catch (error) {
+    if (error instanceof Error) {
+      errorResponse(res, error.message, 400)
+    } else {
+      errorResponse(res, "服务器内部错误", 500)
+    }
+  }
+};

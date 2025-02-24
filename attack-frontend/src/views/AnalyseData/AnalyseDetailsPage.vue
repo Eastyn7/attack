@@ -316,6 +316,7 @@
 							:on-change="handleModelChange"
 							:on-exceed="exceedFileLimit"
 							v-model:file-list="modelFileList"
+							:accept="'.onnx'"
 						>
 							<el-icon class="el-icon--upload">
 								<UploadFilled />
@@ -324,9 +325,7 @@
 								拖拽文件到此处 或 <em>点击上传</em>
 							</div>
 							<template #tip>
-								<div class="el-upload__tip">
-									支持任何文件类型，大小不超过10MB
-								</div>
+								<div class="el-upload__tip">支持.onnx文件类型</div>
 							</template>
 						</el-upload>
 						<br />

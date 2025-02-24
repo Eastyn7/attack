@@ -234,6 +234,22 @@ export const useUserStore = defineStore(StoreNames.USER, {
 				throw error
 			}
 		},
+		// 删除项目
+		async deleteProject(project_name: string) {
+			try {
+				const jsonData = formToJson({
+					user_id: this.userInfo.user_id,
+					project_name,
+				})
+				const result = await api.auth.deleteProject(jsonData)
+				if (result.status) {
+					return '删除成功'
+				}
+			} catch (error) {
+				console.error('删除文件失败', error)
+				throw error
+			}
+		},
 
 		// 单独的 setter 方法
 		setUserInfo(userInfo: UserInfo) {

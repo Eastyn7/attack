@@ -46,3 +46,19 @@ export const getProjectList = async (user_id: number): Promise<ProjectList[]> =>
   // 返回用户的项目列表
   return projectList;
 };
+
+
+// 删除项目
+export const deleteProject = async (user_id: number, project_name: string): Promise<void> => {
+  try {
+    // 查询 project_list 表中是否存在指定的项目名称和用户 ID 的记录
+    const project = await query<ProjectList[]>('SELECT * FROM project_list WHERE user_id = ? AND project_name = ?', [user_id, project_name]);
+    if (project.length === 0) {
+      throw new Error('项目不存在');
+    }
+    // 从数据库中删除对应的记录
+    await query('DELETE FROM project_list WHERE user_id = ? AND project_name = ?', [user_id, project_name]);
+  } catch (error) {
+    throw error;
+  }
+};

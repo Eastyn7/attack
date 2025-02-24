@@ -1,6 +1,6 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-	import { More, Edit, Delete, Document } from '@element-plus/icons-vue'
+	import { More, Delete, Document } from '@element-plus/icons-vue'
 	import { useUserStore } from '@/stores'
 	import { formatDate } from '@/utils/util'
 
@@ -30,7 +30,21 @@
 			},
 		})
 	}
-
+	const handleDelete = async (row: any) => {
+		loading.value = true
+		try {
+			const result = await userStore.deleteProject(row.project_name)
+			if (result) {
+				ElMessage.success(result)
+			}
+			const data = await userStore.getProjectList()
+			projectList.value = data
+		} catch (error: any) {
+			ElMessage.error(error.message || '删除失败')
+		} finally {
+			loading.value = false
+		}
+	}
 	const handleMore = (event: MouseEvent) => {
 		event.stopPropagation()
 	}
@@ -154,7 +168,7 @@
 						</template>
 					</el-table-column>
 					<el-table-column label="操作" width="100">
-						<template #default="">
+						<template #default="{ row }">
 							<el-dropdown placement="bottom-end">
 								<el-button
 									circle
@@ -165,13 +179,10 @@
 								></el-button>
 								<template #dropdown>
 									<el-dropdown-menu>
-										<el-dropdown-item>
+										<el-dropdown-item @click="handleRowClick(row)">
 											<el-icon> <Document /> </el-icon>查看详情
 										</el-dropdown-item>
-										<el-dropdown-item>
-											<el-icon> <Edit /> </el-icon>重命名
-										</el-dropdown-item>
-										<el-dropdown-item>
+										<el-dropdown-item @click="handleDelete(row)">
 											<el-icon> <Delete /> </el-icon>删除
 										</el-dropdown-item>
 									</el-dropdown-menu>
