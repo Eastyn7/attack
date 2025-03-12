@@ -96,8 +96,8 @@
 
 		console.log((Number(file.size) / 1024 / 1024).toFixed(2))
 
-		if (file.size && file.size / 1024 / 1024 > 5) {
-			ElMessage.warning('文件大小不得超过5M')
+		if (file.size && file.size / 1024 / 1024 > 40) {
+			ElMessage.warning('文件大小不得超过40M')
 			return false
 		}
 		formData.value.data_file = file.raw
@@ -254,7 +254,7 @@
 					</el-icon>
 					<div class="el-upload__text">拖拽文件到此处 或 <em>点击上传</em></div>
 					<template #tip>
-						<div class="el-upload__tip">只能上传xlsx或xls文件，且不超过5M</div>
+						<div class="el-upload__tip">只能上传xlsx或xls文件，且不超过40M</div>
 					</template>
 				</el-upload>
 				<br />

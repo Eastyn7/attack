@@ -53,3 +53,20 @@ export const deleteProject = async (req: Request, res: Response): Promise<void> 
     }
   }
 };
+
+// 获取项目id
+export const getProjectId = async (req: Request, res: Response): Promise<void> => {
+  const { user_id, project_name } = req.body
+
+  try {
+    // 调用服务层获取项目列表逻辑
+    const project = await projectService.getProjectId(Number(user_id), project_name)
+    successResponse(res, { project }, '项目获取成功', 200)
+  } catch (error) {
+    if (error instanceof Error) {
+      errorResponse(res, error.message, 400)
+    } else {
+      errorResponse(res, "服务器内部错误", 500)
+    }
+  }
+}

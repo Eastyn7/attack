@@ -62,3 +62,17 @@ export const deleteProject = async (user_id: number, project_name: string): Prom
     throw error;
   }
 };
+
+
+// 获取项目id
+export const getProjectId = async (user_id: number, project_name: string): Promise<any> => {
+  const sql = `SELECT project_id FROM project_list WHERE user_id = ? AND project_name = ?`;
+  const project = await query<ProjectList[]>(sql, [user_id, project_name]);
+
+  if (project.length === 0) {
+    throw new Error('没有找到项目');
+  }
+
+  // 返回用户的项目列表
+  return project[0].project_id;
+};

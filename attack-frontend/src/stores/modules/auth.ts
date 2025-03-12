@@ -250,6 +250,89 @@ export const useUserStore = defineStore(StoreNames.USER, {
 				throw error
 			}
 		},
+		// 获取分析项目Id
+		async getProjectId(project_name: string) {
+			try {
+				const data = formToJson({
+					user_id: this.userInfo.user_id,
+					project_name,
+				})
+				const result = await api.auth.getProjectId(data)
+				if (result.status) {
+					return result.data.project
+				}
+			} catch (error) {
+				console.error('添加分析项目失败', error)
+				throw error
+			}
+		},
+
+		// 上传模型文件
+		async uploadModelFile(
+			model_name: string,
+			file_type: string,
+			model_file: UploadRawFile,
+		) {
+			try {
+				// 创建 FormData 对象
+				const formData = new FormData()
+				formData.append('user_id', String(this.userInfo.user_id))
+				formData.append('model_name', model_name)
+				formData.append('file_type', file_type)
+				formData.append('model_file', model_file)
+
+				const result = await api.auth.uploadModelFile(formData)
+
+				if (result.status) {
+					return result.data
+				}
+			} catch (error) {
+				console.error('添加文件失败', error)
+				throw error
+			}
+		},
+
+		// 分析
+		async analyseData(
+			projectId: number,
+			datasetUrl: string,
+			modelUrl: string,
+			attackMethod: string,
+		) {
+			try {
+				const data = formToJson({
+					user_id: this.userInfo.user_id,
+					project_id: projectId,
+					datasetUrl,
+					modelUrl,
+					attackMethod,
+				})
+				const result = await api.auth.analyseData(data)
+				if (result.status) {
+					return result.data.analyseResult
+				}
+			} catch (error) {
+				console.error('分析失败', error)
+				throw error
+			}
+		},
+
+		// ai
+		async callAi(content: string) {
+			try {
+				const data = formToJson({
+					user_id: this.userInfo.user_id,
+					content,
+				})
+				const result = await api.auth.callAi(data)
+				if (result.status) {
+					return result.data.aiResult
+				}
+			} catch (error) {
+				console.error('AI解析失败', error)
+				throw error
+			}
+		},
 
 		// 单独的 setter 方法
 		setUserInfo(userInfo: UserInfo) {

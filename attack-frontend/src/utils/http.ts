@@ -12,7 +12,7 @@ export interface CustomRequestConfig extends InternalAxiosRequestConfig {
 const http = axios.create({
 	// baseURL: 'http://', // API远程地址
 	baseURL: 'http://127.0.0.1:3309/api', // 本地API的基础URL
-	timeout: 10000, // 请求超时时间为10秒
+	timeout: 60000, // 请求超时时间为60秒
 })
 
 // 请求拦截器

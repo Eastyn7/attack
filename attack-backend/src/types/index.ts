@@ -45,3 +45,19 @@ export interface AuditInfo {
   audit_id: number
   audit_name: string
 }
+
+export interface AnalyseList {
+  id: number;
+  user_id: number;
+  project_id: number;
+  ModelTrainingAccuracy: number;
+  ModelTestingAccuracy: number;
+  OverallAttackAccuracy: number;
+  MemberAccuracy: number;
+  NonMemberAccuracy: number;
+  Precision: number;
+  Recall: number;
+  AUC: number;
+  CustomPrecision: number;
+  CustomRecall: number;
+}
