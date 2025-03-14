@@ -208,6 +208,19 @@ const callAi = async (data: string, needToken = true) => {
 	}
 }
 
+// 获取历史记录
+const getResultHistory = async (data: string, needToken = true) => {
+	try {
+		const response = await http.post('/analyse/gethistory', data, {
+			needToken,
+		} as CustomRequestConfig)
+		return response
+	} catch (error) {
+		console.error('历史记录获取失败:', error)
+		throw error
+	}
+}
+
 // 默认导出
 export default {
 	login,
@@ -225,4 +238,5 @@ export default {
 	uploadModelFile,
 	analyseData,
 	callAi,
+	getResultHistory,
 }

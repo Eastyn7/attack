@@ -33,7 +33,7 @@ export const createDataList = async (user_id: number, data_name: string, data_fi
 // 获取数据列表
 export const getDataList = async (user_id: number): Promise<DataList[]> => {
   // 查询当前用户的所有数据
-  const dataList = await query<DataList[]>('SELECT data_id, data_name, file_size, updated_at FROM data_list WHERE user_id = ?', [user_id]);
+  const dataList = await query<DataList[]>('SELECT data_id, data_name, file_size, updated_at FROM data_list WHERE user_id = ? ORDER BY data_id DESC', [user_id]);
 
   if (dataList.length === 0) {
     throw new Error('没有找到数据');

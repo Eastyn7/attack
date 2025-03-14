@@ -295,7 +295,7 @@ export const useUserStore = defineStore(StoreNames.USER, {
 		// 分析
 		async analyseData(
 			projectId: number,
-			datasetUrl: string,
+			dataUrl: string,
 			modelUrl: string,
 			attackMethod: string,
 		) {
@@ -303,7 +303,7 @@ export const useUserStore = defineStore(StoreNames.USER, {
 				const data = formToJson({
 					user_id: this.userInfo.user_id,
 					project_id: projectId,
-					datasetUrl,
+					dataUrl,
 					modelUrl,
 					attackMethod,
 				})
@@ -327,6 +327,22 @@ export const useUserStore = defineStore(StoreNames.USER, {
 				const result = await api.auth.callAi(data)
 				if (result.status) {
 					return result.data.aiResult
+				}
+			} catch (error) {
+				console.error('AI解析失败', error)
+				throw error
+			}
+		},
+
+		// 获取历史记录
+		async getResultHistory() {
+			try {
+				const data = formToJson({
+					user_id: this.userInfo.user_id,
+				})
+				const result = await api.auth.getResultHistory(data)
+				if (result.status) {
+					return result.data.resultHistory
 				}
 			} catch (error) {
 				console.error('AI解析失败', error)

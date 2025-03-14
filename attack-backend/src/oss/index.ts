@@ -2,7 +2,7 @@ import OSS from 'ali-oss';
 
 // 初始化 OSS 客户端
 const client = new OSS({
-  region: 'oss-cn-chengdu', 
+  region: '', 
   accessKeyId: '',
   accessKeySecret: '',
   bucket: '',

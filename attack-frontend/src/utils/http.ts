@@ -10,8 +10,8 @@ export interface CustomRequestConfig extends InternalAxiosRequestConfig {
 
 // 创建axios实例，并设置基础配置
 const http = axios.create({
-	// baseURL: 'http://', // API远程地址
-	baseURL: 'http://127.0.0.1:3309/api', // 本地API的基础URL
+	baseURL: 'http://attackbackend.eastyn.cn/api', // API远程地址
+	// baseURL: 'http://127.0.0.1:3309/api', // 本地API的基础URL
 	timeout: 60000, // 请求超时时间为60秒
 })
 

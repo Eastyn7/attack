@@ -211,11 +211,8 @@
 	const startAnalyse = async () => {
 		if (!modelPath.value || !modelName.value || !method.value) {
 			ElMessage.warning('请上传训练模型文件并选择审计方法')
-			// return
+			return
 		}
-
-		// 先将loading设置为true
-		loading.value = true
 
 		// 更新分析流程中的描述
 		processItems.value.forEach((item) => {
@@ -234,6 +231,8 @@
 		})
 
 		try {
+			// 先将loading设置为true
+			loading.value = true
 			const result = await userStore.analyseData(
 				projectId.value,
 				excelFilePath.value,
@@ -284,55 +283,60 @@
 
 	// 指标对象
 	const labelMapping = {
-		ModelTrainingAccuracy: {
+		train_accuracy: {
 			name: 'ModelTrainingAccuracy模型训练准确率',
-			definition: '模型在训练集上的分类准确率，反映对训练数据的拟合能力。',
-			normalRange: '通常应大于80%，但需结合测试准确率判断过拟合风险。',
+			definition:
+				'训练集准确率反映模型在训练数据上的学习效果，通常建议小于80%，以避免过拟合；当其超过85%时，可能触发过拟合警报，增加患者身份泄露风险。',
+			normalRange: '建议小于80%，超过85%可能引发过拟合警报。',
 		},
-		ModelTestingAccuracy: {
+		test_accuracy: {
 			name: 'ModelTestingAccuracy模型测试准确率',
-			definition: '模型在独立测试集上的泛化能力指标。',
-			normalRange: '应与训练准确率差异小于5%，否则存在过拟合风险。',
+			definition:
+				'测试集准确率衡量模型的泛化能力，理想区间为75-80%；与训练集准确率差值超过15%则表明记忆效应显著。',
+			normalRange: '75-80%，与训练集准确率差值不应超过15%。',
 		},
-		OverallAttackAccuracy: {
+		overall_acc: {
 			name: 'OverallAttackAccuracy整体攻击准确率',
-			definition: '攻击模型正确分类成员与非成员的总体准确率。',
-			normalRange: '理想隐私保护模型应接近50%（随机猜测水平）。',
+			definition:
+				'攻击模型正确分类成员与非成员的总体准确率，应接近(member_acc + nonmember_acc)/2，偏离超过5%提示评估方法存在缺陷。',
+			normalRange:
+				'应接近(member_acc + nonmember_acc)/2，偏离超过5%需重新评估。',
 		},
-		MemberAccuracy: {
+		member_acc: {
 			name: 'MemberAccuracy成员准确率（TPR）',
-			definition: '攻击模型正确识别训练集成员的比例（真正例率）。',
-			normalRange: '理想隐私保护模型应接近50%。',
+			definition:
+				'攻击模型正确识别训练集成员的概率，小于55%为安全区间，超过65%则需启动违规调查流程；每提升1%识别率，需增加0.2%差分隐私噪声以增强防御。',
+			normalRange: '小于55%为安全，超过65%需启动调查。',
 		},
-		NonMemberAccuracy: {
+		nonmember_acc: {
 			name: 'NonMemberAccuracy非成员准确率（TNR）',
-			definition: '攻击模型正确识别非成员的比例（真负例率）。',
-			normalRange: '理想隐私保护模型应接近50%。',
+			definition:
+				'攻击模型正确识别非成员的比例，应与member_acc保持±10%差异，以确保攻击模型的平衡性。',
+			normalRange: '应与member_acc保持±10%差异。',
 		},
-		Precision: {
+		precision: {
 			name: 'Precision攻击精确率',
-			definition: '攻击模型预测为"成员"的样本中真实成员占比。',
-			normalRange: '应与召回率保持平衡，通常需大于70%。',
+			definition:
+				'攻击模型预测为"成员"的样本中真实成员占比，精确率超过90%可实施定向数据污染攻击。',
+			normalRange: '精确率超过90%可能带来隐私风险。',
 		},
-		Recall: {
+		recall: {
 			name: 'Recall攻击召回率',
-			definition: '攻击模型正确识别出的真实成员比例，与TPR等价。',
-			normalRange: '应与精确率保持平衡，通常需大于70%。',
+			definition:
+				'攻击模型正确识别出的真实成员比例，与TPR等价，召回率超过70%可重构患者数据分布。',
+			normalRange: '召回率超过70%可能导致隐私泄露。',
 		},
-		AUC: {
+		auc: {
 			name: 'AUC值',
-			definition: 'ROC曲线下面积，综合衡量攻击模型的判别能力。',
-			normalRange: '理想隐私保护模型应接近0.5。',
+			definition:
+				'AUC-ROC 衡量攻击模型区分成员和非成员的能力，小于0.75为安全区间，超过0.83时隐私泄露风险呈指数增长。',
+			normalRange: '小于0.75为安全，超过0.83隐私风险急剧增加。',
 		},
-		CustomPrecision: {
-			name: 'CustomPrecision自定义精确率',
-			definition: '根据特定业务规则定义的精确率指标。',
-			normalRange: '需根据业务需求制定基准。',
-		},
-		CustomRecall: {
-			name: 'CustomRecall自定义召回率',
-			definition: '根据特定业务规则定义的召回率指标。',
-			normalRange: '需根据业务需求制定基准。',
+		tpr_at_low_fpr: {
+			name: 'TPR at Low FPR低误报率下的真正例率',
+			definition:
+				'TPR@0.1%FPR 表示在万分之一误报率下的真阳性率，小于0.15为安全区间，超过0.25则可推断患者用药记录。',
+			normalRange: '小于0.15为安全，超过0.25可能泄露患者信息。',
 		},
 	}
 
@@ -349,15 +353,18 @@
 	// 绘制雷达图
 	const mainRadarOption = computed(() => {
 		const radarKeys = [
-			'ModelTrainingAccuracy',
-			'ModelTestingAccuracy',
-			'OverallAttackAccuracy',
-			'MemberAccuracy',
-			'NonMemberAccuracy',
-			'AUC',
+			'train_accuracy',
+			'test_accuracy',
+			'overall_acc',
+			'member_acc',
+			'nonmember_acc',
 		]
 		const indicator = radarKeys.map((key) => ({
-			name: labelMapping[key as keyof typeof labelMapping].name,
+			name: (
+				labelMapping[key as keyof typeof labelMapping].name.match(
+					/[a-zA-Z]+/g,
+				) || []
+			).join(''),
 			max: 1,
 		}))
 		const values = radarKeys.map((key) => analyseResult.value[key] || 0)
@@ -415,12 +422,11 @@
 	// 扩展指标面板
 	const extendedMetrics = computed(() => {
 		const excludedKeys = [
-			'ModelTrainingAccuracy',
-			'ModelTestingAccuracy',
-			'OverallAttackAccuracy',
-			'MemberAccuracy',
-			'NonMemberAccuracy',
-			'AUC',
+			'train_accuracy',
+			'test_accuracy',
+			'overall_acc',
+			'member_acc',
+			'nonmember_acc',
 		]
 		return Object.entries(analyseResult.value)
 			.filter(([key]) => !excludedKeys.includes(key))
@@ -634,7 +640,7 @@
 
 									<div class="combined-charts">
 										<!-- 主雷达图 -->
-										<div class="main-radar" style="height: 400px">
+										<div class="main-radar" style="height: 450px">
 											<e-charts :option="mainRadarOption" />
 										</div>
 
@@ -654,19 +660,6 @@
 											</el-row>
 										</div>
 									</div>
-
-									<!-- <div style="height: 300px; width: 400px">
-										<e-charts class="chart" :option="radarOption" />
-									</div>
-
-									<div class="result-chart-container">
-										<div style="height: 300px; width: 400px">
-											<e-charts class="chart" :option="option1" />
-										</div>
-										<div style="height: 300px; width: 400px">
-											<e-charts class="chart" :option="option2" />
-										</div>
-									</div> -->
 								</div>
 								<!-- 分析建议 -->
 								<div class="fenxijianyi">
@@ -857,6 +850,7 @@
 					color: #666;
 					display: flex;
 					justify-content: center;
+					text-align: center;
 				}
 
 				.metric-value {

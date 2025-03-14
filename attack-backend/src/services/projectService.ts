@@ -24,9 +24,10 @@ export const createProjectList = async (user_id: number, data_id: number, projec
 
 // 获取项目列表
 export const getProjectList = async (user_id: number): Promise<ProjectList[]> => {
-  // 使用 JOIN 语句联合查询 project_list 和 data_list 表
+  // 使用 JOIN 语句联合查询 project_list 和 data_list 表，并根据 project_id 倒序排序
   const sql = `
-    SELECT 
+    SELECT
+      pl.project_id,
       pl.project_name, 
       pl.updated_at, 
       dl.data_name
@@ -36,6 +37,8 @@ export const getProjectList = async (user_id: number): Promise<ProjectList[]> =>
       data_list dl ON pl.data_id = dl.data_id
     WHERE 
       pl.user_id = ?
+    ORDER BY 
+      pl.project_id DESC
   `;
   const projectList = await query<ProjectList[]>(sql, [user_id]);
 
